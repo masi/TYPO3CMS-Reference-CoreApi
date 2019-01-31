@@ -9,19 +9,19 @@ Context API and Aspects
 Introduction
 ------------
 
-Context API encapsulates various information for data retrieval (e.g. inside
+The Context API encapsulates various information for data retrieval (e.g. inside
 the database) and analysis of current permissions and caching information.
 
-Previously, various information was distributed inside globally accessible objects (:php:`$TSFE` or :php:`$BE_USER`)
+Previously, various information was distributed inside globally accessible objects (:php:`$TSFE` or :php:`$BE_USER <be-user>`)
 like the current workspace ID or if a frontend or backend user is authenticated. Having a global object
 available was also dependent on the current request type (frontend or backend), instead of having
 one consistent place where all this data is located.
 
-The context is instantiated at the very beginning of each TYPO3 entry point, keeping track
-of the current time (formally known as :php:`$GLOBALS['EXEC_TIME']`, if a user is logged in,
-and which workspace is currently accessed.
+The context (an instance of :code:\TYPO3\CMS\Core\Context\Context:) is instantiated at the very beginning of each TYPO3 entry point.
+It keeps track of the current time (formally known as :php:`$GLOBALS['EXEC_TIME']`, if a user is logged in,
+which workspace is currently accessed and so forth.
 
-This information is separated in so-called "Aspects", each being responsible for a certain area:
+This information is separated in so-called "Aspects", each being responsible for a certain area.
 
 .. _context_api_aspects_datetime:
 
@@ -54,6 +54,7 @@ Example
 
 .. code-block:: php
 
+    /** @var \TYPO3\CMS\Core\Context\Context $context */
     $context = GeneralUtility::makeInstance(Context::class);
 
     // Reading the current data instead of $GLOBALS['EXEC_TIME']
@@ -116,6 +117,7 @@ Example
 
 .. code-block:: php
 
+    /** @var \TYPO3\CMS\Core\Context\Context $context */
     $context = GeneralUtility::makeInstance(Context::class);
 
     // Reading the current fallback chain instead $TSFE->sys_language_mode
@@ -134,18 +136,20 @@ In comparison to known behaviour until TYPO3 v9, :php:`UserAspect` replaces vari
 
 .. _context_api_aspects_user_properties:
 
-The User Aspect accepts following properties:
+The User Aspect for backend users accepts following properties:
 
 ==============  ======================================================================  ======
 Property        Call                                                                    Result
 ==============  ======================================================================  ======
 ``id``          :php:`$context->getPropertyFromAspect('backend.user', 'id');`           uid of the currently logged in user, 0 if no user
-``username``    :php:`$context->getPropertyFromAspect('backend.user', 'username');`     the username of the currently authenticated user. Empty string if no user.
-``isLoggedIn``  :php:`$context->getPropertyFromAspect('frontend.user', 'isLoggedIn');`  whether a user is logged in, as boolean.
-``isAdmin``     :php:`$context->getPropertyFromAspect('backend.user', 'isAdmin');`      whether the user is admin, as boolean. Only useful for BEuser.
-``groupIds``    :php:`$context->getPropertyFromAspect('backend.user', 'groupIds');`     the groups the user is a member of, as array
-``groupNames``  :php:`$context->getPropertyFromAspect('frontend.user', 'groupNames');`  the names of all groups the user belongs to, as array
+``username``    :php:`$context->getPropertyFromAspect('backend.user', 'username');`     the username of the currently authenticated user, empty string if no user
+``isLoggedIn``  :php:`$context->getPropertyFromAspect('backend.user', 'isLoggedIn');`   whether a user is logged in as boolean.
+``isAdmin``     :php:`$context->getPropertyFromAspect('backend.user', 'isAdmin');`      whether the user is admin as boolean (only for BE users)
+``groupIds``    :php:`$context->getPropertyFromAspect('backend.user', 'groupIds');`     the groups the user is a member of as array
+``groupNames``  :php:`$context->getPropertyFromAspect('backend.user', 'groupNames');`   the names of all groups the user belongs to as array
 ==============  ======================================================================  ======
+
+The User Aspect for frontend users accepts the same properties expcept for :code:`isAdmin`.
 
 .. _context_api_aspects_user_example:
 
@@ -154,6 +158,7 @@ Example
 
 .. code-block:: php
 
+    /** @var \TYPO3\CMS\Core\Context\Context $context */
     $context = GeneralUtility::makeInstance(Context::class);
 
     // Checking if a user is logged in
@@ -165,7 +170,7 @@ Example
 Visibility Aspect
 ^^^^^^^^^^^^^^^^^
 
-The aspect contains whether to show hidden pages, records (content) or even deleted records.
+Contains whether to show hidden pages, records (content) or even deleted records.
 
 In comparison to known behaviour until TYPO3 v9, :php:`VisibilityAspect` replaces for example :php:`$GLOBALS['TSFE']->showHiddenPages` and :php:`$GLOBALS['TSFE']->showHiddenRecords`.
 
@@ -177,9 +182,9 @@ The Visibility Aspect accepts following properties:
 =========================  ==============================================================================  ======
 Property                   Call                                                                            Result
 =========================  ==============================================================================  ======
-``includeHiddenPages``     :php:`$context->getPropertyFromAspect('visibility', 'includeHiddenPages');`     whether hidden pages should be displayed, as boolean
-``includeHiddenContent``   :php:`$context->getPropertyFromAspect('visibility', 'includeHiddenContent');`   whether hidden content should be displayed, as boolean
-``includeDeletedRecords``  :php:`$context->getPropertyFromAspect('visibility', 'includeDeletedRecords');`  whether deleted records should be displayed, as boolean.
+``includeHiddenPages``     :php:`$context->getPropertyFromAspect('visibility', 'includeHiddenPages');`     whether hidden pages should be displayed as boolean
+``includeHiddenContent``   :php:`$context->getPropertyFromAspect('visibility', 'includeHiddenContent');`   whether hidden content should be displayed as boolean
+``includeDeletedRecords``  :php:`$context->getPropertyFromAspect('visibility', 'includeDeletedRecords');`  whether deleted records should be displayed as boolean.
 =========================  ==============================================================================  ======
 
 .. _context_api_aspects_visibility_example:
@@ -189,6 +194,7 @@ Example
 
 .. code-block:: php
 
+    /** @var \TYPO3\CMS\Core\Context\Context $context */
     $context = GeneralUtility::makeInstance(Context::class);
 
     // Checking if hidden pages should be displayed
@@ -200,7 +206,7 @@ Example
 Workspace Aspect
 ^^^^^^^^^^^^^^^^
 
-The aspect contains information about the currently accessed workspace
+Contains information about the currently accessed workspace.
 
 In comparison to known behaviour until TYPO3 v9, :php:`WorkspaceAspect` replaces e.g. :php:`$GLOBALS['BE_USER']->workspace`.
 
@@ -213,8 +219,8 @@ The Workspace Aspect accepts following properties:
 Property       Call                                                               Result
 =============  =================================================================  ======
 ``id``         :php:`$context->getPropertyFromAspect('workspace', 'id');`         UID of the currently accessed workspace as integer
-``isLive``     :php:`$context->getPropertyFromAspect('workspace', 'isLive');`     whether the current workspace is live, or a custom offline WS, as boolean
-``isOffline``  :php:`$context->getPropertyFromAspect('workspace', 'isOffline');`  whether the current workspace is offline, as boolean.
+``isLive``     :php:`$context->getPropertyFromAspect('workspace', 'isLive');`     whether the current workspace is live, or a custom offline WS as boolean
+``isOffline``  :php:`$context->getPropertyFromAspect('workspace', 'isOffline');`  whether the current workspace is offline as boolean.
 =============  =================================================================  ======
 
 .. _context_api_aspects_workspace_example:
@@ -224,6 +230,7 @@ Example
 
 .. code-block:: php
 
+    /** @var \TYPO3\CMS\Core\Context\Context $context */
     $context = GeneralUtility::makeInstance(Context::class);
 
     // Retrieving the uid of currently accessed workspace
