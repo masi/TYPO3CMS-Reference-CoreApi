@@ -33,8 +33,8 @@ About this chapter and what it does *not* cover, first.
   the `typo3/testing-framework <https://github.com/TYPO3/testing-framework>`_ package. The
   development of that package is closely bound to Core development and has a relatively high
   development speed. It does contain breaking patches per major Core versions, but it should
-  not contain breaking patches for existing major Core branches. If you now set up testing
-  using `typo3/testing-framework` with TYPO3 Core version 9, it should not break within v9's
+  not contain breaking changes for existing major Core branches. If you now set up testing
+  using `typo3/testing-framework` with TYPO3 Core version 11, it should not break within v9's
   lifetime. But it is likely to break if you upgrade to version 10 or later and may need adaption
   in your extension codes or setup.
 
@@ -42,7 +42,7 @@ About this chapter and what it does *not* cover, first.
   `nimut/testing-framework <https://github.com/Nimut/testing-framework>`_ may better suit your
   needs. This is however out of scope for this chapter.
 
-* This documentation relies on TYPO3 Core version 9 and higher. It is possible to
+* This documentation relies on TYPO3 Core version 11 and higher. It is possible to
   run tests using older Core versions and various extensions have done this before. This
   is however out of scope for this chapter.
 
@@ -82,19 +82,20 @@ Testing enetcache
 The extension `enetcache <https://github.com/lolli42/enetcache>`_ is a small extension that helps
 with frontend plugin based caches. It has been available as composer package and a TER extension for quite
 some time and is loosely maintained to keep up with current Core versions. At the time of
-writing, it has three branches:
+writing, it has several releases:
 
-* `1.2` compatible with Core v7, released to TER as 1.x.y
+* `1` compatible with Core v8.5 and v9
 
-* `2` compatible with Core v8, released to TER as 2.x.y
+* `4` compatible with Core v9.3
 
-* `master` compatible with Core v9, released to TER as 3.x.y
+* `6` compatible with Core v10
 
-Branch master will be branched later as `3` when Core version 10 gains traction. This document
-focuses on the master / Core v9 compatible branch. The extension comes with a couple of unit tests
+* `7` compatible with Core v10 and v11
+
+This document focuses on the Core v compatible branch. The extension comes with a couple of unit tests
 in `Tests/Unit`, we want to run these locally and by GitHub Actions, along with some PHP linting to verify
-there is no fatal PHP error. We'll test that extension with both PHP 7.2 and PHP 7.3 - the two PHP
-versions TYPO3 Core v9 currently supports at the time of writing.
+there is no fatal PHP error. We'll test that extension with both PHP 8.0 and PHP 8.1 - the two PHP
+versions TYPO3 Core v11 supports.
 
 Starting point
 --------------
@@ -136,7 +137,8 @@ This is how the composer.json file looks before we add a test setup:
           "dev-master": "2.x-dev"
         },
         "typo3/cms": {
-          "cms-package-dir": "{$vendor-dir}/typo3/cms"
+          "extension-key": "enetcache",
+          "web-dir": ".Build/Web"
         }
       }
     }
@@ -188,14 +190,14 @@ to add root :file:`composer.json` details, turning the extension into a project 
         "GPL-2.0-or-later"
       ],
       "require": {
-        "typo3/cms-core": "^9.5"
+        "typo3/cms-core": "^10.4"
       },
       "config": {
         "vendor-dir": ".Build/vendor",
         "bin-dir": ".Build/bin"
       },
       "require-dev": {
-        "typo3/testing-framework": "^4.11.1"
+        "typo3/testing-framework": "^6.15"
       },
       "autoload": {
         "psr-4": {
@@ -207,21 +209,11 @@ to add root :file:`composer.json` details, turning the extension into a project 
           "Lolli\\Enetcache\\Tests\\": "Tests"
         }
       },
-      "replace": {
-        "enetcache": "self.version",
-        "typo3-ter/enetcache": "self.version"
-      },
-      "scripts": {
-        "post-autoload-dump": [
-          "TYPO3\\TestingFramework\\Composer\\ExtensionTestEnvironment::prepare"
-        ]
-      },
       "extra": {
         "branch-alias": {
           "dev-master": "2.x-dev"
         },
         "typo3/cms": {
-          "cms-package-dir": "{$vendor-dir}/typo3/cms",
           "extension-key": "enetcache",
           "web-dir": ".Build/Web"
         }
@@ -279,7 +271,6 @@ Let's clone that repository and call `composer install` (stripped):
     Generating autoload files
     Generating class alias map file
     Inserting class alias loader into main autoload.php file
-    > TYPO3\TestingFramework\Composer\ExtensionTestEnvironment::prepare
     lolli@apoc /var/www/local/git/enetcache $
 
 To clean up any errors created at this point, we can always run `rm -r .Build/ composer.lock` later and
@@ -301,8 +292,7 @@ our tests in:
 
 The package `typo3/testing-framework` that we added as `require-dev` dependency has some basic Core
 extensions set as dependency, we end up with the Core extensions `backend`, `core`, `extbase`,
-`fluid`, `frontend` and `recordlist` in `.Build/Web/typo3/sysext`. Additionally, the
-:php:`ExtensionTestEnvironment` hook linked our git root checkout as extension into `.Build/Web/typo3conf/ext`.
+`fluid`, `frontend` and `recordlist` in `.Build/Web/typo3/sysext`.
 
 We now have a full TYPO3 instance. It is not installed, there is no database, but we are now at the point
 to begin unit testing!
