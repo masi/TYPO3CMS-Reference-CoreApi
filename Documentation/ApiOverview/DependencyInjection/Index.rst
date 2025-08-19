@@ -190,8 +190,8 @@ this cache:
 *   The container cache *is* flushed using "Admin tools" -> "Maintenance" -> "Flush Caches"
     of the Install Tool.
 
-*   The container cache *is* flushed using the CLI command :shell:`vendor/bin/typo3 cache:flush`. Using
-    :shell:`vendor/bin/typo3 cache:warmup` afterwards will rebuild and cache the container.
+*   The container cache *is* flushed using the CLI command :shell:`vendor/bin/typo3 cache:flush --group di`.
+    Using :shell:`vendor/bin/typo3 cache:warmup` afterwards will rebuild and cache the container.
 
 *   The container cache is automatically flushed when using the Extension Manager to load
     or unload extensions in (non-Composer) classic mode.
