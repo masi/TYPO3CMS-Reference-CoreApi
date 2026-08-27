@@ -3,7 +3,7 @@
         <li class="page-item">
             <f:link.action
                 arguments="{currentPageNumber:page}"
-                class="page-link {f:if(condition:'{currentPageNumber}=={page}',then:'active')}"
+                class="page-link {f:if(condition:'{paginator.currentPageNumber}=={page}',then:'active')}"
             >
                 {page}
             </f:link.action>
